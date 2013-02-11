@@ -127,6 +127,12 @@ abstract class Mollom {
     params.add(name, value ? "1" : "0");
   }
 
+  protected void add (MultivaluedMap<String, String> params, String name, Integer value) {
+    if (value != null) {
+      params.add(name, value.toString());
+    }
+  }
+
   protected <T extends Enum> void add (MultivaluedMap<String, String> params, String name, T value) {
     if (value != null) {
       params.add(name, value.toString().toLowerCase());
