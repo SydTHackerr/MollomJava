@@ -105,6 +105,12 @@ public class MollomWhitelist extends Mollom {
     if (entry == null || entry.getId() == null) {
       throw new IllegalArgumentException("Entry id should not be null.");
     }
+    if (entry.getValue() == null) {
+      throw new IllegalArgumentException("Value is mandatory.");
+    }
+    if (entry.getContext() == null) {
+      throw new IllegalArgumentException("Context is mandatory.");
+    }
 
     MultivaluedMap<String, String> params = new MultivaluedMapImpl();
     add(params, "value", entry.getValue());
@@ -143,7 +149,7 @@ public class MollomWhitelist extends Mollom {
       throw new IllegalArgumentException("Entry id should not be null or empty.");
     }
 
-    RestResponse response = invoke("POST", "/whitelist/" + publicKey + "/" + id, new MultivaluedMapImpl(), RestResponse.class);
+    RestResponse response = invoke("POST", "/whitelist/" + publicKey + "/" + id + "/delete", new MultivaluedMapImpl(), RestResponse.class);
     if (response.getCode() != 200) {
       throw new Exception(response.getMessage());
     }
