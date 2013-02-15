@@ -375,9 +375,14 @@ abstract class Mollom {
             i = 0;
             continue;
           case 1200: // Server busy
-          case 9000: // Networking error
-          default:   // Unknown error
             logger.log(Level.WARNING, "ErrorCode 1200: trying next server");
+            response = null;
+            break;
+          case 9000: // Networking error
+            logger.log(Level.WARNING, "ErrorCode 9000 (" + mce.getCause().getMessage() + ") trying next server", mce);
+            response = null;
+            break;
+          default:   // Unknown error
             response = null;
         }
       }
