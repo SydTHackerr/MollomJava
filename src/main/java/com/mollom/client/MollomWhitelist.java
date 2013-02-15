@@ -37,11 +37,11 @@ import javax.ws.rs.core.MultivaluedMap;
  */
 public class MollomWhitelist extends Mollom {
 
-  public MollomWhitelist (String publicKey, String privateKey) {
+  public MollomWhitelist(String publicKey, String privateKey) {
     super(publicKey, privateKey, false);
   }
 
-  public MollomWhitelist (String publicKey, String privateKey, boolean testing) {
+  public MollomWhitelist(String publicKey, String privateKey, boolean testing) {
     super(publicKey, privateKey, testing);
   }
 
@@ -50,9 +50,9 @@ public class MollomWhitelist extends Mollom {
    *
    * @param entry
    * @return the new entry with some additional fields.
-	 * @throws Exception when something goes wrong while contacting Mollom
+   * @throws Exception when something goes wrong while contacting Mollom
    */
-  public WhitelistEntry add (WhitelistEntry entry) throws Exception {
+  public WhitelistEntry add(WhitelistEntry entry) throws Exception {
     if (entry.getValue() == null) {
       throw new IllegalArgumentException("Value is mandatory.");
     }
@@ -79,9 +79,9 @@ public class MollomWhitelist extends Mollom {
    * @param id the id of the entry
    * @return the entry
    * @throws IllegalArgumentException when the id is null or empty
-	 * @throws Exception when something goes wrong while contacting Mollom
+   * @throws Exception when something goes wrong while contacting Mollom
    */
-  public WhitelistEntry get (String id) throws Exception {
+  public WhitelistEntry get(String id) throws Exception {
     if (id == null || id.isEmpty()) {
       throw new IllegalArgumentException("Entry id should not be null or empty.");
     }
@@ -99,9 +99,9 @@ public class MollomWhitelist extends Mollom {
    * @param entry the entry that needs to be updated
    * @return an updated version of the entry
    * @throws IllegalArgumentException if the entry or the entry id is null
-	 * @throws Exception when something goes wrong while contacting Mollom
+   * @throws Exception when something goes wrong while contacting Mollom
    */
-  public WhitelistEntry update (WhitelistEntry entry) throws Exception {
+  public WhitelistEntry update(WhitelistEntry entry) throws Exception {
     if (entry == null || entry.getId() == null) {
       throw new IllegalArgumentException("Entry id should not be null.");
     }
@@ -129,22 +129,22 @@ public class MollomWhitelist extends Mollom {
    * Delete the provided entry.
    *
    * @param entry the entry that needs to be deleted
-	 * @throws Exception when something goes wrong while contacting Mollom
+   * @throws Exception when something goes wrong while contacting Mollom
    */
-  public void delete (WhitelistEntry entry) throws Exception {
+  public void delete(WhitelistEntry entry) throws Exception {
     if (entry == null) {
       throw new IllegalArgumentException("Entry id should not be null or empty.");
     }
-    delete (entry.getId());
+    delete(entry.getId());
   }
 
   /**
    * Delete the entry with the provided id.
    *
    * @param id the id of the entry that needs to be deleted
-	 * @throws Exception when something goes wrong while contacting Mollom
+   * @throws Exception when something goes wrong while contacting Mollom
    */
-  public void delete (String id) throws Exception {
+  public void delete(String id) throws Exception {
     if (id == null || id.isEmpty()) {
       throw new IllegalArgumentException("Entry id should not be null or empty.");
     }
@@ -159,9 +159,9 @@ public class MollomWhitelist extends Mollom {
    * Get a list with all whitelist entries.
    * 
    * @return the list with all entries
-	 * @throws Exception when something goes wrong while contacting Mollom
+   * @throws Exception when something goes wrong while contacting Mollom
    */
-  public List<WhitelistEntry> list () throws Exception {
+  public List<WhitelistEntry> list() throws Exception {
     WhitelistResponse response = invoke("GET", "/whitelist/" + publicKey, new MultivaluedMapImpl(), WhitelistResponse.class);
     if (response.getCode() != 200) {
       throw new Exception(response.getMessage());
@@ -178,9 +178,9 @@ public class MollomWhitelist extends Mollom {
    * @param count the number of entries to retrieve
    * @return the list of entries
    * @throws IllegalArgumentException if offset or count are not null and negative.
-	 * @throws Exception when something goes wrong while contacting Mollom
+   * @throws Exception when something goes wrong while contacting Mollom
    */
-  public List<WhitelistEntry> list (Integer offset, Integer count) throws Exception {
+  public List<WhitelistEntry> list(Integer offset, Integer count) throws Exception {
     if (offset != null && offset < 0) {
       throw new IllegalArgumentException("Offset should be 0 or larger when provided.");
     }
@@ -197,5 +197,19 @@ public class MollomWhitelist extends Mollom {
       throw new Exception(response.getMessage());
     }
     return response.getEntries();
+  }
+
+  /**
+   * Remove all entries from the whitelist. This call is not part of the REST
+   * api and requires 1 call to get a list of all entries & one call for each
+   * of the entries to delete them.
+   */
+  public void clear() throws Exception {
+    System.err.println("Clearing whitelist");
+    List<WhitelistEntry> entries = list();
+
+    for (WhitelistEntry e : entries) {
+      delete(e);
+    }
   }
 }

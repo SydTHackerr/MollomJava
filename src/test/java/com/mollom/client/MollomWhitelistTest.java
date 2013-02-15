@@ -27,7 +27,10 @@ package com.mollom.client;
 import static com.mollom.client.BaseMollomTest.PRIVATE_KEY;
 import static com.mollom.client.BaseMollomTest.PUBLIC_KEY;
 import com.mollom.client.rest.WhitelistEntry;
+import java.util.ArrayList;
+import java.util.List;
 import static org.junit.Assert.*;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -35,11 +38,20 @@ import org.junit.Test;
  * @author Thomas Meire
  */
 public class MollomWhitelistTest extends BaseMollomTest {
+  
+  private MollomWhitelist whitelist;
+
+  public MollomWhitelistTest  () {
+    whitelist = new MollomWhitelist(PUBLIC_KEY, PRIVATE_KEY);
+  }
+
+  @Before
+  public void clearWhitelist () throws Exception {
+    whitelist.clear();
+  }
 
   @Test
   public void testCRUD () throws Exception {
-    MollomWhitelist whitelist = new MollomWhitelist(PUBLIC_KEY, PRIVATE_KEY);
-
     WhitelistEntry original = new WhitelistEntry();
     original.setValue("85.234.217.77");
     original.setContext("authorIp");
@@ -76,5 +88,67 @@ public class MollomWhitelistTest extends BaseMollomTest {
     assertEquals(added.getNote(),    fetched.getNote());
     
     whitelist.delete(fetched);
+  }
+
+  @Test
+  public void testList () throws Exception {
+    List<WhitelistEntry> entries = whitelist.list();
+    assertNotNull(entries);
+
+    List<WhitelistEntry> extras = new ArrayList<WhitelistEntry>();
+
+    for (int i = 0; i < 5; i++) {
+      WhitelistEntry entry = new WhitelistEntry();
+      entry.setContext("authorIp");
+      entry.setValue("154.26.44." + i);
+
+      extras.add(whitelist.add(entry));
+    }
+
+    List<WhitelistEntry> entries1 = whitelist.list();
+    assertNotNull(entries1);
+    assertEquals(entries.size() + extras.size(), entries1.size());
+
+    for (WhitelistEntry e : extras) {
+      whitelist.delete(e);
+    }
+
+    List<WhitelistEntry> entries2 = whitelist.list();
+    assertNotNull(entries2);
+    assertEquals(entries.size(), entries2.size());
+  }
+
+  @Test
+  public void testLimitedList () throws Exception {
+    List<WhitelistEntry> entries = whitelist.list();
+    assertNotNull(entries);
+
+    List<WhitelistEntry> extras = new ArrayList<WhitelistEntry>();
+
+    // make sure there are some entries
+    for (int i = 0; i < 16; i++) {
+      WhitelistEntry entry = new WhitelistEntry();
+      entry.setContext("authorIp");
+      entry.setValue("154.26.44." + i);
+
+      extras.add(whitelist.add(entry));
+    }
+
+    // fetch all blacklist entries
+    int count = 0;
+    int offset = 0;
+    List<WhitelistEntry> result = whitelist.list(offset, 5);
+    while (result.size() == 5) {
+      offset = Integer.parseInt(result.get(result.size() - 1).getId());
+      count += result.size();
+      result = whitelist.list(offset, 5);
+    }
+    count += result.size();
+    assertEquals(entries.size() + extras.size(), count);
+
+    // cleanup
+    for (WhitelistEntry e : extras) {
+      whitelist.delete(e);
+    }
   }
 }
